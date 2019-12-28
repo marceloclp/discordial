@@ -1,13 +1,16 @@
 <p align="center">
 <img src="https://i.imgur.com/AR37Vu4.png" alt="Discordial" height="200px" >
 </p>
+
 Discordial is a framework for building Discord bots. It makes use of the advantages of TypeScript and combines elements of OOP (Object Oriented Programming) and FP (Functional Programming).
 
 Discordial is built using the [IoC (Inversion of Control)](https://en.wikipedia.org/wiki/Inversion_of_control) design pattern, and focus on modularity and ease of use. Adding functionality to your bot is as easy as downloading a module and writing a single line of code.
 
+
 ## Example (or check out the [example repo](https://github.com/marceloclp/discordial-example))
 Discordial works by registering plugins during your Discordial instantiation. To register plugins, simply append them to the plugins array.
 ```ts
+// src/index.ts
 import { Discordial } from "discordial";
 import { PrefixPlugin } from "./prefix/prefix.plugin";
 
