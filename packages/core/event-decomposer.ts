@@ -1,6 +1,7 @@
 import Discord from "discord.js";
 import { SyntheticObjectKey } from "../common/synthetic-objects/synthetic-object";
 import { SyntheticMessage, SyntheticChannel, SyntheticGuild } from "../common/synthetic-objects";
+import { SyntheticWrapper, Constructable } from "../common/types";
 
 const def = SyntheticObjectKey.DEFAULT;
 
@@ -12,7 +13,7 @@ const mapEntityToDecomposer: Record<string, Function> = {
 };
 
 export class EventDecomposer {
-  private readonly _mapEntityToSynthetic: Record<string, Constructable> = {
+  private readonly _mapEntityToSynthetic: Record<string, Constructable<any>> = {
     [Discord.Message.name]: SyntheticMessage
   };
 
@@ -22,7 +23,7 @@ export class EventDecomposer {
    * @param ctor The synthetic object constructor.
    * @param key The key that indicates which object to return.
    */
-  public static parseToken(ctor: Constructable, key = SyntheticObjectKey.DEFAULT) {
+  public static parseToken(ctor: Constructable<any>, key = SyntheticObjectKey.DEFAULT) {
     return `${ctor.name}:${key}`;
   }
 

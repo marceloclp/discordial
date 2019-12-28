@@ -1,18 +1,17 @@
 {
   "name": "discordial",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "A Discord framework using IoC architecture.",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "author": "Marcelo Perrella",
   "license": "MIT",
   "scripts": {
     "type-check": "tsc --noEmit",
     "type-check:watch": "npm run type-check -- --watch",
-    "build": "npm run build:types && npm run build:js",
-    "build:types": "tsc --emitDeclarationOnly",
-    "build:js": "babel src --out-dir lib --extensions \".ts,.tsx\" --source-maps inline",
-    "start": "node lib/index.js",
-    "watch": "tsc -p tsconfig.json -w"
+    "start": "node dist/index.js",
+    "watch": "tsc -p tsconfig.json -w",
+    "prepublish": "tsc -p tsconfig.json"
   },
   "devDependencies": {
     "@types/node": "^12.12.21",
@@ -22,7 +21,6 @@
   "dependencies": {
     "colors": "^1.4.0",
     "discord.js": "^11.5.1",
-    "dotenv": "^8.2.0",
     "reflect-metadata": "^0.1.13",
     "uniqid": "^5.2.0"
   }

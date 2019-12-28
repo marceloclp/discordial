@@ -1,4 +1,5 @@
 import { DiscordEvents } from "../enums";
+import { Constructable } from "../types";
 
 /**
  * Describes an injectable parameter.
@@ -6,13 +7,13 @@ import { DiscordEvents } from "../enums";
 export class ParamMetadata {
   constructor(
     /** The class to be injected into this parameter. */
-    private readonly _token: Constructable,
+    private readonly _token: Constructable<any>,
 
     /** An optional key, used for improved dependency injection. */
     private readonly _key?: string,
   ) {}
 
-  get token(): Constructable {
+  get token(): Constructable<any> {
     return this._token;
   }
 
@@ -34,9 +35,6 @@ export class MethodMetadata {
   constructor(
     /** Method name. */
     private readonly _name: string,
-
-    /** The method this metadata belongs to. */
-    private readonly _fn: SpreadFunction
   ) {}
 
   get params(): ParamMetadata[] {
@@ -49,10 +47,6 @@ export class MethodMetadata {
 
   get name(): string {
     return this._name;
-  }
-
-  get fn(): SpreadFunction {
-    return this._fn;
   }
 
   public setEvent(event: DiscordEvents): void {

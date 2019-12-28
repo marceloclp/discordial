@@ -1,14 +1,14 @@
 import { DiscordEvents, Scope } from "../enums";
 import { MethodMetadata, ParamMetadata } from "./metadata";
+import { Constructable } from "../types";
 
 export class Binding {
   /** Method name to method metadata map. */
-  //private readonly _methods = new Map<string, MethodMetadata>();
   private readonly _methods: Record<string, MethodMetadata> = {};
   
   constructor(
     /** The class this metadata belongs to. */
-    private readonly _target: Constructable,
+    private readonly _target: Constructable<any>,
     
     /** The scope of the injectable. */
     private _scope = Scope.SINGLETON,
@@ -18,7 +18,7 @@ export class Binding {
     return this._methods;
   }
 
-  get target(): Constructable {
+  get target(): Constructable<any> {
     return this._target;
   }
 
@@ -34,11 +34,11 @@ export class Binding {
 
   private getMethod(name: string): MethodMetadata {
     if (!this._methods[name])
-      this._methods[name] = new MethodMetadata(name, (this._target as any)[name]);
+      this._methods[name] = new MethodMetadata(name);
     return this._methods[name];
   }
 
-  public setMethodParam(name: string, index: number, token: Constructable, key?: string): void {
+  public setMethodParam(name: string, index: number, token: Constructable<any>, key?: string): void {
     const { params } = this.getMethod(name);
     while (params.length <= index)
       params.push({} as ParamMetadata);

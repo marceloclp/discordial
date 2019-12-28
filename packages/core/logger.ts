@@ -100,7 +100,23 @@ export class Logger {
       colors.bold.blue(event),
       "=>",
       colors.bold.magenta(number.toString()),
-      "event(s) called\n",
+      "method(s) called\n",
     ].join(" "))
+  }
+
+  public static async onSuccessfulMethodCall(plugin: string, method: string): Promise<void> {
+    write([
+      "   ",
+      colors.green.bold("✓"),
+      colors.yellow.bold(plugin) + `.${method}()\n`,
+    ].join(" "));
+  }
+
+  public static async onFailedMethodCall(plugin: string, method: string): Promise<void> {
+    write([
+      "   ",
+      colors.red.bold("X"),
+      colors.yellow.bold(plugin) + `.${method}()\n`,
+    ].join(" "));
   }
 };

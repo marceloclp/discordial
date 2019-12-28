@@ -3,10 +3,18 @@ import { DiscordEvents } from "../common/enums";
 import { getBinding } from "../common/utils";
 import { Logger } from "./logger";
 import { Injector } from "./injector";
-import { MethodMetadata } from "../common/bindings";
+import { MethodMetadata, ParamMetadata } from "../common/bindings";
 import { EventDecomposer } from "./event-decomposer";
+import { InstanceMap, SpreadFunction } from "../common/types";
 
-type EventsMap = Record<DiscordEvents, MethodMetadata[]>;
+interface MethodDescriptor {
+  fn: SpreadFunction,
+  params: ParamMetadata[],
+  name: string,       // Used for logging purposes only.
+  pluginName: string, // Used for logging purposes only.
+};
+
+type EventsMap = Record<DiscordEvents, MethodDescriptor[]>;
 
 export class EventBinder {
   /** Used to decompose the event params and build synthetic objects. */
@@ -26,10 +34,17 @@ export class EventBinder {
     for (const [id, instance] of instances) {
       Logger.bindingPlugin(instance.constructor.name);
 
-      Object.values(getBinding(instance).methods).forEach(metadata => {
-        Logger.bindingMethod(metadata.name, metadata.event as string);
-        if (metadata.event)
-          this._eventsMap[metadata.event].push(metadata);
+      const { methods } = getBinding(instance);
+      Object.values(methods).forEach(({ name, event, params }) => {
+        Logger.bindingMethod(name, event as string);
+        if (!event) return;
+        const fn: SpreadFunction = instance[name].bind(instance);
+        this._eventsMap[event].push({
+          params,
+          fn,
+          name,
+          pluginName: instance.constructor.name
+        });
       })
     }
   }
@@ -48,10 +63,15 @@ export class EventBinder {
     return (...args: any[]) => {
       Logger.onEvent(event, methods.length);
       const wrapper = this._eventDecomposer.decompose(...args);
-      methods.forEach((metadata) => {
-        const dps = injector.resolve(metadata.params, wrapper);
-        try { metadata.fn(...dps, ...args); }
-        catch (err) { console.log(err); }
+      methods.forEach((descriptor) => {
+        const dps = injector.resolve(descriptor.params, wrapper);
+        try {
+          descriptor.fn(...dps, ...args);
+          Logger.onSuccessfulMethodCall(descriptor.pluginName, descriptor.name);
+        } catch (err) {
+          Logger.onFailedMethodCall(descriptor.pluginName, descriptor.name);
+          console.log(err);
+        }
       });
     };
   }

@@ -4,14 +4,14 @@ import { uniqueid, getBinding } from "../common/utils";
 import { EventBinder } from "./event-binder";
 import { Injector } from "./injector";
 import { Logger } from "./logger";
+import { DynamicPlugin } from "./interfaces";
+import { Constructable, InstanceMap } from "../common/types";
 
 interface DiscordialConfiguration {
-  plugins: (Constructable | DynamicPlugin)[];
+  plugins: (Constructable<any> | DynamicPlugin)[];
 }
 
-const defaultConfiguration: DiscordialConfiguration = {
-  plugins: [],
-};
+const defaultConfiguration: DiscordialConfiguration = { plugins: [] };
 
 /**
  * Responsible for initializing the discord bot and the IoC container for the plugins.
@@ -30,10 +30,10 @@ export class Discordial {
   private readonly _instances: InstanceMap = new Map();
 
   constructor(
-    private readonly _token: string,
+    private readonly token: string,
     config = defaultConfiguration
   ) {
-    Logger.start(this._token);
+    Logger.start(this.token);
     this.loadPlugins(config.plugins);
     this._eventBinder.attachEvents(this._instances, this._client, this._injector);
     this.connect();
@@ -44,7 +44,7 @@ export class Discordial {
    * 
    * @param plugins Array of plugins or plugins wrappers to be loaded.
    */
-  private loadPlugins(plugins: (Constructable | DynamicPlugin)[]): void {
+  private loadPlugins(plugins: (Constructable<any> | DynamicPlugin)[]): void {
     Logger.startLoadingPlugins();
 
     const pluginsList = new Map<Function, boolean>();
@@ -65,7 +65,7 @@ export class Discordial {
    * @param pluginsList A map of instantiated plugins used to verify if a static plugin is not being instantiated twice.
    */
   private loadPlugin(
-    usePlugin: Constructable,
+    usePlugin: Constructable<any>,
     config: any,
     id: string,
     pluginsList: Map<Function, boolean>
@@ -79,11 +79,13 @@ export class Discordial {
 
     const dps = getBinding(usePlugin).dependencies;
     const resolvedDps = this._injector.resolve(dps, undefined, true);
-    this._instances.set(id as string, new usePlugin(...resolvedDps, config));
+    
+    const instance = new usePlugin(...resolvedDps, config);
+    this._instances.set(id, instance);
   }
 
   private connect(): void {
     this._client.on(DiscordEvents.READY, Logger.connected);
-    this._client.login(this._token);
+    this._client.login(this.token);
   }
 }; 

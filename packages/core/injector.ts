@@ -3,9 +3,10 @@ import { getBinding } from "../common/utils";
 import { Scope } from "../common/enums";
 import { Logger } from "./logger";
 import { EventDecomposer } from "./event-decomposer";
+import { Constructable, Instance, SyntheticWrapper } from "../common/types";
 
 export class Injector {
-  private readonly _instances = new Map<Constructable, Instance>();
+  private readonly _instances = new Map<Constructable<any>, Instance>();
 
   /**
    * Resolves the dependencies of an instance.
