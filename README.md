@@ -81,3 +81,11 @@ export class PrefixService {
 * Shares similarities with AngularJS and NestJS. If you have experience with any of those frameworks, Discordial becomes that much easier to use.
 
 * **Synthetic objects:** Discordial offers custom interfaces for manipulating the event parameters with improved functionality. Synthetic objects can also be replaced by awesome community made creations. ~~Well, not yet... but that's the plan! :)~~
+
+### Roadmap
+
+* Create a `@types/discordial` package.
+* Implement basic services to interact with databases (expected support to mongodb and mysql).
+* Implement Synthetic Objects functionality.
+* Implement `Guards` logic to protect endpoints from being used by users who do not possess enough permissions (i.e. roles).
+* Implement cache module.
