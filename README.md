@@ -2,7 +2,7 @@
 <img src="https://i.imgur.com/AR37Vu4.png" alt="Discordial" height="200px" >
 </p>
 
-Logo made by the talented ![Lucas Souto](https://www.behance.net/LUCASSOUTOO").
+Logo made by the talented [Lucas Souto](https://www.behance.net/LUCASSOUTOO").
 
 Discordial is a framework for building Discord bots. It makes use of the advantages of TypeScript and combines elements of OOP (Object Oriented Programming) and FP (Functional Programming).
 
