@@ -44,6 +44,7 @@ export class PrefixPlugin {
 
 Services can be used to separate concerns and create scalable applications. To declare a service, use the `@Injectable()` decorator. Let's take a look at our `PrefixService`.
 ```ts
+// src/prefix/prefix.service.ts
 import { Injectable, SyntheticMessage } from "discordial";
 
 @Injectable()
