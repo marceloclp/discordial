@@ -1,11 +1,20 @@
-# Discordial
+<p align="center">
+<img src="https://i.imgur.com/AR37Vu4.png" alt="Discordial" height="200px" >
+</p>
+
+Logo made by the talented [Lucas Souto](https://www.behance.net/LUCASSOUTOO").
+
 Discordial is a framework for building Discord bots. It makes use of the advantages of TypeScript and combines elements of OOP (Object Oriented Programming) and FP (Functional Programming).
 
 Discordial is built using the [IoC (Inversion of Control)](https://en.wikipedia.org/wiki/Inversion_of_control) design pattern, and focus on modularity and ease of use. Adding functionality to your bot is as easy as downloading a module and writing a single line of code.
 
-## Example
+You should probably read the [wiki](https://github.com/marceloclp/discordial/wiki).
+
+
+## Example (or check out the [example repo](https://github.com/marceloclp/discordial-example))
 Discordial works by registering plugins during your Discordial instantiation. To register plugins, simply append them to the plugins array.
 ```ts
+// src/index.ts
 import { Discordial } from "discordial";
 import { PrefixPlugin } from "./prefix/prefix.plugin";
 
@@ -72,3 +81,11 @@ export class PrefixService {
 * Shares similarities with AngularJS and NestJS. If you have experience with any of those frameworks, Discordial becomes that much easier to use.
 
 * **Synthetic objects:** Discordial offers custom interfaces for manipulating the event parameters with improved functionality. Synthetic objects can also be replaced by awesome community made creations. ~~Well, not yet... but that's the plan! :)~~
+
+### Roadmap
+
+* Create a `@types/discordial` package.
+* Implement basic services to interact with databases (expected support to mongodb and mysql).
+* Implement Synthetic Objects functionality.
+* Implement `Guards` logic to protect endpoints from being used by users who do not possess enough permissions (i.e. roles).
+* Implement cache module.
