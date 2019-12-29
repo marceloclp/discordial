@@ -25,7 +25,7 @@ export class Logger {
     return colors.bgYellow.white("[TOKEN]") + " " + colors.yellow(token);
   }
 
-  public static async start(token: string): Promise<void> {
+  public static start(token: string): void {
     console.clear();
     write([
       Logger.timestamp(),
@@ -35,7 +35,7 @@ export class Logger {
     ].join(" "));
   }
 
-  public static async loadingPlugin(name: string, isDynamic: boolean): Promise<void> {
+  public static loadingPlugin(name: string, isDynamic: boolean): void {
     const type = isDynamic ? "dynamic" : "static";
     write([
       Logger.timestamp(),
@@ -45,7 +45,7 @@ export class Logger {
     ].join(" "));
   }
 
-  public static async loadingInjectable(name: string, scope: string, level = 1): Promise<void> {
+  public static loadingInjectable(name: string, scope: string, level = 1): void {
     write([
       "   ".repeat(level),
       "↳",
@@ -54,7 +54,7 @@ export class Logger {
     ].join(" "));
   }
 
-  public static async bindingPlugin(plugin: string): Promise<void> {
+  public static bindingPlugin(plugin: string): void {
     write([
       Logger.timestamp(),
       colors.white("Binding"),
@@ -63,7 +63,7 @@ export class Logger {
     ].join(" "));
   }
 
-  public static async bindingMethod(methodName: string, eventName: string): Promise<void> {
+  public static bindingMethod(methodName: string, eventName: string): void {
     write([
       "   ",
       "↳",
@@ -73,28 +73,28 @@ export class Logger {
     ].join(" "))
   }
 
-  public static async startLoadingPlugins(): Promise<void> {
+  public static startLoadingPlugins(): void {
     write([
       "\n" + Logger.timestamp(),
       colors.bgRed.white("Loading plugins ...") + "\n",
     ].join(" "));
   }
 
-  public static async startBindingEvents(): Promise<void> {
+  public static startBindingEvents(): void {
     write([
       "\n" + Logger.timestamp(),
       colors.bgRed.white("Binding events ...") + "\n",
     ].join(" "));
   }
 
-  public static async connected(): Promise<void> {
+  public static connected(): void {
     write([
       "\n" + Logger.timestamp(),
       colors.bgGreen.white("Connected successfuly to Discord!") + "\n",
     ].join(" "));
   }
 
-  public static async onEvent(event: string, number: number): Promise<void> {
+  public static onEvent(event: string, number: number): void {
     write([
       Logger.timestamp(),
       colors.bold.blue(event),
@@ -104,7 +104,7 @@ export class Logger {
     ].join(" "))
   }
 
-  public static async onSuccessfulMethodCall(plugin: string, method: string): Promise<void> {
+  public static onSuccessfulMethodCall(plugin: string, method: string): void {
     write([
       "   ",
       colors.green.bold("✓"),
@@ -112,7 +112,7 @@ export class Logger {
     ].join(" "));
   }
 
-  public static async onFailedMethodCall(plugin: string, method: string): Promise<void> {
+  public static onFailedMethodCall(plugin: string, method: string): void {
     write([
       "   ",
       colors.red.bold("X"),
