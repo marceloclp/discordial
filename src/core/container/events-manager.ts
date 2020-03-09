@@ -5,6 +5,7 @@ import { getBinding } from "../../common/util/getBinding";
 import { DiscordEvents } from "../../common/enums";
 import { log } from "../utils/log";
 import { MethodMetadataRoles } from "../../common/interfaces/method-metadata-roles";
+import { ParamMetadata } from "../../common/metadata/param-metadata";
 
 type RolesIterator = IterableIterator<[string, Discord.Role]>;
 
@@ -14,6 +15,8 @@ interface EventWrapper {
     readonly fn: CallableFunction;
 
     readonly roles: MethodMetadataRoles;
+
+    readonly params: ParamMetadata[]
 };
 
 export class EventsManager {
@@ -67,13 +70,15 @@ export class EventsManager {
             methods.map(m => ({ name: m.name, event: m.event as string }))
         ));
 
-        for (const { event, target, name, roles } of methods) {
+        for (const method of methods) {
+            const { event, target, name, roles, params } = method;
             if (!event)
                 continue;
             this.getEventWrapper(event as DiscordEvents)
                 .push({
                     fn: target[name].bind(target),
                     roles,
+                    params,
                 });
         }
     }
@@ -158,7 +163,8 @@ export class EventsManager {
     private async execMethod(event: DiscordEvents, wrapper: EventWrapper, ...args: any[]): Promise<void> {
         if (!this.resolveGuards(event, wrapper, args.length && args[0]))
             return;
-        const { fn } = wrapper;
-        fn(...args);
+        const { fn, params } = wrapper;
+        const dps = await this._dpsManager.resolveMethodDps(params);
+        fn(...args, ...dps);
     }
 }

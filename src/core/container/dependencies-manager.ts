@@ -131,6 +131,8 @@ export class DependenciesManager {
     public async resolveTransformerDps(dps: DependencyWrapper[], plugin?: Constructable<any>): Promise<any[]> {
         const resolved = [];
         for (const dp of dps) {
+            if (!dp)
+                continue;
             if (typeof dp === "object" && dp.token)
                 resolved.push(await this.resolveTokenDp(dp.token, undefined, undefined, plugin));
             else if (this.isConfigDp(dp))
@@ -154,6 +156,8 @@ export class DependenciesManager {
     public async resolveMethodDps(dps: ParamMetadata[], plugin?: Constructable<any>): Promise<any[]> {
         const resolved = [];
         for (const dp of dps) {
+            if (!dp)
+                continue;
             const { dpToken, transformerFn, inject } = dp;
             resolved.push(await this.resolveTokenDp(dpToken, transformerFn, inject, plugin));
         }
