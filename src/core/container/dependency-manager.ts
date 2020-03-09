@@ -142,11 +142,4 @@ export class DependencyManager {
         const transformerDps = await this.resolveTransformerDps(inject);
         return transformerFn(instance, ...transformerDps);
     }
-
-    private isConfigDp(token: Token): boolean {
-        if (typeof token !== "function")
-            return false;
-        const binding = getBinding(token);
-        return binding && binding.type === BindingType.PLUGIN;
-    }
 }
