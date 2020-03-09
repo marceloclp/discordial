@@ -74,8 +74,8 @@ export class Discordial {
         const { eventsManager } = this.container;
         const { client, token } = this;
 
-        eventsManager.bindEvents(client);
         client.on(DiscordEvents.READY, () => log(this._.onReady()));
+        eventsManager.bindEvents(client);
 
         await client.login(token);
     }

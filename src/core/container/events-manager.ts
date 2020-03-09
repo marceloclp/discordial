@@ -70,5 +70,11 @@ export class EventsManager {
      * 
      * @param {Discord.Client} client - The Discord client.
      */
-    public bindEvents(client: Discord.Client): void {}
+    public bindEvents(client: Discord.Client): void {
+        for (const [event, wrapper] of this._eventsMap.entries()) {
+            client.on(event as string, (...args: any[]) => {
+                wrapper.fns.forEach(fn => fn(...args));
+            });
+        }
+    }
 }
