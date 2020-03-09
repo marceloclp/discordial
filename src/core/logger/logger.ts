@@ -26,6 +26,12 @@ export class Logger implements LoggerInterface {
         return indent + _.bold(symbol) + ' ' + msg;
     }
 
+    public onReady(): string {
+        return this.format(Symbols.checkmark, [
+            ` Discordial is ready!`,
+        ], 1);
+    }
+
     public onDiscordialStart(token: string): string {
         return this.format(Symbols.starred_circle, [
             ` Configuring Discordial with `,
