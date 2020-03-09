@@ -1,14 +1,12 @@
 import { Logger, LoggerInterface } from "./logger/logger";
 import { Container } from "./container/container";
-import { Constructable } from "../common/types";
-import { PluginWrapper } from "./interfaces/plugin-wrapper";
 import { log } from "./utils/log";
+import { PluginWrapper } from "./types";
+import { DiscordialOptions } from "./interfaces/discordial-options";
 
-export interface DiscordialOptions {
-    readonly plugins?: (PluginWrapper | Constructable<any>)[],
-
-    readonly useLogger?: Constructable<LoggerInterface>;
-}
+const defaultOptions: DiscordialOptions = {
+    useLogger: Logger,
+};
 
 export class Discordial {
     private readonly _logger: LoggerInterface;
@@ -18,15 +16,16 @@ export class Discordial {
 
     constructor(
         private readonly _token: string,
-        options: DiscordialOptions,
+        plugins: (PluginWrapper | Promise<PluginWrapper>)[],
+        options = defaultOptions,
     ) {
         console.clear();
 
-        const { useLogger, plugins } = options;
+        const { useLogger } = options;
         this._logger    = new (useLogger || Logger)();
         this._container = new Container(this._logger);
 
-        this.start(plugins || []);
+        this.start(plugins);
     }
 
     private get _l(): NonNullableFields<LoggerInterface> {
@@ -37,11 +36,11 @@ export class Discordial {
         return this._token;
     }
 
-    private async start(plugins: (PluginWrapper | Constructable<any>)[]): Promise<void> {
+    private async start(plugins: (PluginWrapper | Promise<PluginWrapper>)[]): Promise<void> {
         const { _l, token } = this;
         
         log(_l.onDiscordialStart(token));
-
+        
         await this._container.startPlugins(plugins);
     }
 }

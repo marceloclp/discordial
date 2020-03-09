@@ -6,7 +6,8 @@ import { LoggerInterface } from "../logger/logger";
 import { log } from "../utils/log";
 import { DependenciesManager } from "./dependencies-manager";
 import { EventsManager } from "./events-manager";
-import { PluginWrapper } from "../interfaces/plugin-wrapper";
+import { DynamicPlugin } from "../interfaces/dynamic-plugin";
+import { PluginWrapper } from "../types";
 
 type PluginKey = Constructable<any> | string | Symbol;
 
@@ -77,11 +78,11 @@ export class PluginsManager {
             await this._ctrllsManager.resolve(controller, plugin);
     }
 
-    public normalizePlugin(plugin: PluginWrapper | Constructable<any>): PluginWrapper {
-        if ((plugin as PluginWrapper).usePlugin)
-            return plugin as PluginWrapper;
+    public normalizePlugin(plugin: PluginWrapper): DynamicPlugin {
+        if (typeof plugin === "object")
+            return plugin as DynamicPlugin;
         
-        if ((plugin as Constructable<any>).prototype)
+        if (typeof plugin === "function")
             return { usePlugin: plugin as Constructable<any> };
 
         throw new Error([

@@ -1,10 +1,9 @@
 import { DependenciesManager } from "./dependencies-manager";
-import { Constructable } from "../../common/types";
 import { PluginsManager } from "./plugins-manager";
-import { PluginWrapper } from "../interfaces/plugin-wrapper";
 import { LoggerInterface } from "../logger/logger";
 import { log } from "../utils/log";
 import { EventsManager } from "./events-manager";
+import { PluginWrapper } from "../types";
 
 /**
  * The Container registers plugins, instantiates them and prevents garbage
@@ -26,12 +25,13 @@ export class Container {
         return this._pluginsManager.eventsManager;
     }
 
-    public async startPlugins(plugins: (PluginWrapper | Constructable<any>)[]): Promise<void> {
-        const { _: _l } = this;
-        log(_l.onDiscordialPluginsLoading());
+    public async startPlugins(plugins: (PluginWrapper | Promise<PluginWrapper>)[]): Promise<void> {
+        log(this._.onDiscordialPluginsLoading());
         
         for (const plugin of plugins) {
-            const { usePlugin, useConfig } = this._pluginsManager.normalizePlugin(plugin);
+            const { usePlugin, useConfig } = this
+                ._pluginsManager
+                .normalizePlugin(await plugin as PluginWrapper);
             await this._pluginsManager.resolve(usePlugin, useConfig);
         }
     }
