@@ -1,9 +1,9 @@
 import { Token, TransformerFunction, DependencyWrapper, Instance, Constructable } from "../../common/types";
-import { getBinding } from "../../common/util/getBinding";
-import { ParamMetadata } from "../../common/metadata/param-metadata";
-import { RegisterAsyncMetadata } from "../../common/metadata/register-async-metadata";
-import { Keys } from "../../common/enums";
 import { LoggerInterface } from "../logger/logger";
+import { RegisterAsyncMetadata } from "../../common/metadata/register-async-metadata";
+import { ParamMetadata } from "../../common/metadata/param-metadata";
+import { getBinding } from "../../common/util/getBinding";
+import { Keys } from "../../common/enums";
 
 type InjectablesMap = Map<Token, Constructable<any>>;
 
@@ -14,37 +14,44 @@ type InstancesMap = Map<Token, any>;
  * constructors, class methods and transformer functions.
  */
 export class DependenciesManager {
-    static readonly injectables: InjectablesMap = new Map();
-    private readonly instances: InstancesMap = new Map();
+    /** Maps an injectable token to its constructable. */
+    static readonly _injectablesMap: InjectablesMap = new Map();
+
+    /** Maps an injectable token to its instance. */
+    private readonly _instancesMap: InstancesMap = new Map();
 
     constructor(
         private readonly _logger: LoggerInterface,
     ) {}
 
+    private get _(): NonNullableFields<LoggerInterface> {
+        return this._logger as NonNullableFields<LoggerInterface>;
+    }
+
     public static register(token: Token, target: any): void {
-        if (DependenciesManager.injectables.has(token)) {
+        if (DependenciesManager._injectablesMap.has(token)) {
             throw new Error(`The injectable <${typeof target}> can only be registered once.`);
         }
-        DependenciesManager.injectables.set(token, target);
+        DependenciesManager._injectablesMap.set(token, target);
     }
 
     public getInjectable(token: Token): any {
-        return DependenciesManager.injectables.get(token);
+        return DependenciesManager._injectablesMap.get(token);
     }
 
     public setInstance(token: Token, instance: any): void {
-        if (this.instances.has(token)) {
+        if (this._instancesMap.has(token)) {
             throw new Error("Injectable instance is being registered twice.");
         }
-        this.instances.set(token, instance);
+        this._instancesMap.set(token, instance);
     }
 
     public getInstance(token: Token): void {
-        return this.instances.get(token);
+        return this._instancesMap.get(token);
     }
 
     private hasInstance(token: Token): boolean {
-        return this.instances.has(token);
+        return this._instancesMap.has(token);
     }
 
     /**
@@ -83,7 +90,11 @@ export class DependenciesManager {
      * Resolves the dependencies of an injectable and returns an instance. It
      * will cache the instance if the injectable is cacheable.
      * 
-     * @param {Token} token - The injectable token.
+     * An injectable may require the config object returned by the plugin who
+     * owns the controller who is requiring the injectable.
+     * 
+     * @param {Token}         token  - The injectable token.
+     * @param {Constructable} plugin - The plugin who owns the config object.
      * 
      * @returns An instance of the injectable.
      */
@@ -109,9 +120,13 @@ export class DependenciesManager {
      * The transformer function can take any type of argument (tokens, functions,
      * classes for static usage, etc), so they have to be treated separately.
      * 
-     * @param {DependencyWrapper} dps - The dependencies to be resolved.
+     * A transformer function may be used to register an injectable async, so it
+     * may require a config object from the parent plugin.
      * 
-     * @returns The resolved dependencies.
+     * @param {DependencyWrapper} dps    - The dependencies to be resolved.
+     * @param {Constructable}     plugin - The plugin who owns the config object.
+     * 
+     * @returns The resolved transformer/inject dependencies.
      */
     public async resolveTransformerDps(dps: DependencyWrapper[], plugin?: Constructable<any>): Promise<any[]> {
         const resolved = [];
@@ -129,9 +144,12 @@ export class DependenciesManager {
      * A class method can only take tokens as injectable parameters. Each token
      * may have a transformer function attached to it.
      * 
-     * @param {ParamMetadata} dps - The dependencies to be resolved.
+     * A constructor method may require the config object.
      * 
-     * @returns The resolved dependencies.
+     * @param {ParamMetadata} dps    - The dependencies to be resolved.
+     * @param {Constructable} plugin - The plugin who owns the config object.
+     * 
+     * @returns The resolved method dependencies.
      */
     public async resolveMethodDps(dps: ParamMetadata[], plugin?: Constructable<any>): Promise<any[]> {
         const resolved = [];
@@ -146,9 +164,10 @@ export class DependenciesManager {
      * Resolves a single dependency and applies any transformer functions required
      * for the injection.
      * 
-     * @param token 
-     * @param transformerFn 
-     * @param inject 
+     * @param {Token}             token         - The dependency token to be resolved.
+     * @param {Function}          transformerFn - An option function to transform the dp before return.
+     * @param {DependencyWrapper} inject        - A list of dps to be injected into the transformer.
+     * @param {Constructable}     plugin        - The plugin who owns the config object.
      * 
      * @returns A resolved token dependency ready to be injected.
      */
@@ -173,10 +192,25 @@ export class DependenciesManager {
         return transformerFn(instance, ...transformerDps);
     }
 
+    /**
+     * Checks if a token is requiring the config object owned by the parent plugin.
+     * 
+     * @param {Token} token - The token to be evaluated.
+     * 
+     * @returns A boolean indicating if the token refers to the config object.
+     */
     private isConfigDp(token: Token): boolean {
         return typeof token === "string" && token === Keys.INJECT_CONFIG;
     }
 
+    /**
+     * Resolves a configuration dependency by retrieving the config associated
+     * with the plugin constructable.
+     * 
+     * @param {Constructable} plugin - The plugin constructable associated with the config.
+     * 
+     * @returns The config object.
+     */
     private resolveConfigDp(plugin: Constructable<any>): any {
         if (!this.hasInstance(plugin)) {
             throw new Error([

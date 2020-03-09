@@ -1,27 +1,23 @@
-import { Constructable } from "../../common/types";
-import { getBinding } from "../../common/util/getBinding";
-import { ControllersManager } from "./controllers-manager";
-import { BindingType } from "../../common/enums";
-import { LoggerInterface } from "../logger/logger";
-import { log } from "../utils/log";
-import { DependenciesManager } from "./dependencies-manager";
 import { EventsManager } from "./events-manager";
+import { ControllersManager } from "./controllers-manager";
+import { DependenciesManager } from "./dependencies-manager";
+import { Constructable } from "../../common/types";
+import { LoggerInterface } from "../logger/logger";
 import { DynamicPlugin } from "../interfaces/dynamic-plugin";
 import { PluginWrapper } from "../types";
-
-type PluginKey = Constructable<any> | string | Symbol;
+import { getBinding } from "../../common/util/getBinding";
+import { BindingType } from "../../common/enums";
+import { log } from "../utils/log";
 
 export class PluginsManager {
-    /**
-     * Used to check the whether or not a plugin has already been instantiated.
-     * Also prevents gargage collection.
-     */
-    private readonly _frequency = new Map<Constructable<any>, boolean>();
+    /** Used to check whether or not a plugin has already been instantiated. */
+    private readonly _frequencyMap = new Map<Constructable<any>, boolean>();
 
     private readonly _ctrllsManager = new ControllersManager(this._, this._dpsManager);
 
     constructor(
         private readonly _logger: LoggerInterface,
+
         private readonly _dpsManager: DependenciesManager,
     ) {}
 
@@ -34,7 +30,7 @@ export class PluginsManager {
     }
 
     public exists(plugin: Constructable<any>): boolean {
-        return this._frequency.has(plugin);
+        return this._frequencyMap.has(plugin);
     }
 
     /**
@@ -67,7 +63,7 @@ export class PluginsManager {
 
         log(_.onPluginLoading(plugin.name));
 
-        this._frequency.set(plugin, true);
+        this._frequencyMap.set(plugin, true);
         if (config) {
             DependenciesManager.register(plugin, plugin);
             this._dpsManager.setInstance(plugin, config);
@@ -78,6 +74,13 @@ export class PluginsManager {
             await this._ctrllsManager.resolve(controller, plugin);
     }
 
+    /**
+     * Normalizes the structure of a plugin into a dynamic plugin format.
+     * 
+     * @param {PluginWrapper} plugin - The plugin structure to be normalized.
+     * 
+     * @returns The plugin as a Plugin Wrapper.
+     */
     public normalizePlugin(plugin: PluginWrapper): DynamicPlugin {
         if (typeof plugin === "object")
             return plugin as DynamicPlugin;

@@ -1,9 +1,9 @@
-import { DependenciesManager } from "./dependencies-manager";
-import { PluginsManager } from "./plugins-manager";
-import { LoggerInterface } from "../logger/logger";
-import { log } from "../utils/log";
 import { EventsManager } from "./events-manager";
+import { PluginsManager } from "./plugins-manager";
+import { DependenciesManager } from "./dependencies-manager";
+import { LoggerInterface } from "../logger/logger";
 import { PluginWrapper } from "../types";
+import { log } from "../utils/log";
 
 /**
  * The Container registers plugins, instantiates them and prevents garbage
@@ -25,6 +25,11 @@ export class Container {
         return this._pluginsManager.eventsManager;
     }
 
+    /**
+     * Initializes a list of plugins.
+     * 
+     * @param {PluginWrapper} plugins - A list of plugins to be initialized.
+     */
     public async startPlugins(plugins: (PluginWrapper | Promise<PluginWrapper>)[]): Promise<void> {
         log(this._.onDiscordialPluginsLoading());
         
