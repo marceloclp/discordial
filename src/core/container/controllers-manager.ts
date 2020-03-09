@@ -1,35 +1,52 @@
-import { Constructable, Instance } from "../../common/types";
-import { DependencyManager } from "./dependency-manager";
-import { getBinding } from "../../common/util/getBinding";
-import { BindingType } from "../../common/enums";
 import { EventsManager } from "./events-manager";
+import { DependenciesManager } from "./dependencies-manager";
 import { LoggerInterface } from "../logger/logger";
+import { Constructable, Instance } from "../../common/types";
+import { BindingType } from "../../common/enums";
+import { getBinding } from "../../common/util/getBinding";
 import { log } from "../utils/log";
 
 export class ControllersManager {
-    /** Maps a controller constructable to an instance to prevent garbage collection. */
-    private readonly _controllers = new Map<Constructable<any>, Instance<any>>();
+    /** Used as a frequency map and prevents garbage collection. */
+    private readonly _controllersMap = new Map<Constructable<any>, Instance<any>>();
 
-    private readonly _eventsManager = new EventsManager(this._logger);
+    private readonly _eventsManager = new EventsManager(this._logger, this._dpsManager);
 
     constructor(
         private readonly _logger: LoggerInterface,
-        private readonly dependencyManager: DependencyManager,
+
+        private readonly _dpsManager: DependenciesManager,
     ) {}
 
-    private get _l(): NonNullableFields<LoggerInterface> {
+    private get _(): NonNullableFields<LoggerInterface> {
         return this._logger as NonNullableFields<LoggerInterface>;
     }
 
-    public get controllers(): Map<Constructable<any>, Instance<any>> {
-        return this._controllers;
+    public get eventsManager(): EventsManager {
+        return this._eventsManager;
     }
 
-    private has(target: Constructable<any>): boolean {
-        return this._controllers.has(target);
+    /**
+     * Checks if a controller has already been instantiated.
+     * 
+     * @param {Constructable} controller - The controller constructable to be checked.
+     * 
+     * @returns a boolean indicating if it has been instantiated.
+     */
+    private has(controller: Constructable<any>): boolean {
+        return this._controllersMap.has(controller);
     }
 
-    public async resolve(controller: Constructable<any>, plugin: Constructable<any>): Promise<void> {
+    /**
+     * Resolves a controller instance by instantiating its dependencies, and
+     * mapping its methods to Discord events.
+     * 
+     * @param {Constructable} controller - The controller constructable to be resolved.
+     * @param {Constructable} plugin     - The plugin who owns the controller.
+     * 
+     * @returns The controller instance.
+     */
+    public async resolve(controller: Constructable<any>, plugin: Constructable<any>): Promise<any> {
         if (getBinding(controller).type !== BindingType.CONTROLLER) {
             throw new Error([
                 `${controller.name} is not a Controller.`,
@@ -44,13 +61,14 @@ export class ControllersManager {
             ].join(' '));
         }
 
-        const { _l } = this;
-        log(_l.onControllerInitialization(controller.name));
+        log(this._.onControllerInitialization(controller.name));
 
-        const instance = await this.dependencyManager.resolveTarget(controller, plugin);
-        this._controllers.set(controller, instance);
+        const instance = await this._dpsManager.resolveTarget(controller, plugin);
+        this._controllersMap.set(controller, instance);
         this._eventsManager.mapController(instance);
         
-        log(_l.onControllerFinish());
+        log(this._.onControllerFinish());
+
+        return instance;
     }
 }

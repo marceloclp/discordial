@@ -10,8 +10,6 @@ export type Target = Constructable<any> | Instance<any>;
 /** A function used to transform a dependency after instantiation or before injection. */
 export type TransformerFunction<T, R> = (target: T, ...args: DependencyWrapper[]) => R | Promise<R>;
 
-export type SpreadFunction = (...args: any[]) => any;
-
 /** A key that is used to access the injectables cache by a secondary name instead of the Class itself. */
 export type Token = Symbol | string | Constructable<any>;
 
