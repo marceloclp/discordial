@@ -21,10 +21,15 @@ export class Container {
         private readonly _logger: LoggerInterface
     ) {
         const { _l } = this;
-        this.injectablesManager = new InjectablesManager();
-        this.dependencyManager  = new DependencyManager(this.injectablesManager);
-        this.controllersManager = new ControllersManager(_l, this.dependencyManager);
-        this.pluginsManager     = new PluginsManager(_l, this.controllersManager);
+        const injectMger  = new InjectablesManager();
+        const dpsMger     = new DependencyManager(injectMger);
+        const ctrlsMger   = new ControllersManager(_l, dpsMger);
+        const pluginsMger = new PluginsManager(_l, ctrlsMger, injectMger);
+
+        this.injectablesManager = injectMger;
+        this.dependencyManager  = dpsMger;
+        this.controllersManager = ctrlsMger;
+        this.pluginsManager     = pluginsMger;
     }
 
     private get _l(): NonNullableFields<LoggerInterface> {

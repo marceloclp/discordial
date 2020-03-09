@@ -4,6 +4,7 @@ import { ControllersManager } from "./controllers-manager";
 import { BindingType } from "../../common/enums";
 import { LoggerInterface } from "../logger/logger";
 import { log } from "../utils/log";
+import { InjectablesManager } from "./injectables-manager";
 
 type PluginKey = Constructable<any> | string | Symbol;
 
@@ -17,7 +18,9 @@ export class PluginsManager {
     constructor(
         private readonly _logger: LoggerInterface,
 
-        private readonly controllersManager: ControllersManager
+        private readonly controllersManager: ControllersManager,
+
+        private readonly injectablesManager: InjectablesManager,
     ) {}
 
     private get _l(): NonNullableFields<LoggerInterface> {
@@ -26,6 +29,10 @@ export class PluginsManager {
 
     public exists(token: PluginKey): boolean {
         return this.refs.has(token);
+    }
+
+    public getConfig(token: PluginKey): any {
+        return this.configs.get(token);
     }
 
     /**
@@ -53,8 +60,12 @@ export class PluginsManager {
         this.refs.set(token, plugin);
         this.configs.set(token, config);
 
+        if (config) {
+            this.injectablesManager.setInstance(token, config);
+        }
+
         const { controllers } = getBinding(plugin).plugin;
         for (const controller of controllers)
-            await this.controllersManager.resolve(controller, config);
+            await this.controllersManager.resolve(controller, plugin);
     }
 }

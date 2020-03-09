@@ -1,3 +1,8 @@
+export enum Keys {
+    BINDING = "discordial:binding",
+    INJECT_CONFIG = "discordial:inject_config",
+}
+
 export enum Scope {
     SINGLETON = 'singleton',
     TRANSIENT = 'transient',

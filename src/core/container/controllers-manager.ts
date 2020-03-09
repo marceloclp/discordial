@@ -29,7 +29,7 @@ export class ControllersManager {
         return this._controllers.has(target);
     }
 
-    public async resolve(controller: Constructable<any>, config?: any): Promise<void> {
+    public async resolve(controller: Constructable<any>, plugin: Constructable<any>): Promise<void> {
         if (getBinding(controller).type !== BindingType.CONTROLLER) {
             throw new Error([
                 `${controller.name} is not a Controller.`,
@@ -47,10 +47,10 @@ export class ControllersManager {
         const { _l } = this;
         log(_l.onControllerInitialization(controller.name));
 
-        const instance = await this.dependencyManager.resolveTarget(controller);
+        const instance = await this.dependencyManager.resolveTarget(controller, plugin);
         this._controllers.set(controller, instance);
         this._eventsManager.mapController(instance);
-
+        
         log(_l.onControllerFinish());
     }
 }

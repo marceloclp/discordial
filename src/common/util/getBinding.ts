@@ -1,7 +1,8 @@
 import { Target } from "../types";
 import { Binding } from "../metadata/binding";
+import { Keys } from "../enums";
 
-const BindingKey = "discordial:binding";
+const BindingKey = Keys.BINDING;
 
 /**
  * Retrieves the metadata binding of a Constructable or Instance, and
