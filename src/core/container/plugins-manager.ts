@@ -1,45 +1,54 @@
-import { Constructable, Instance } from "../../common/types";
+import { Constructable } from "../../common/types";
 import { getBinding } from "../../common/util/getBinding";
 import { ControllersManager } from "./controllers-manager";
 import { BindingType } from "../../common/enums";
 import { LoggerInterface } from "../logger/logger";
 import { log } from "../utils/log";
-import { InjectablesManager } from "./injectables-manager";
+import { DependenciesManager } from "./dependencies-manager";
+import { EventsManager } from "./events-manager";
+import { PluginWrapper } from "../interfaces/plugin-wrapper";
 
 type PluginKey = Constructable<any> | string | Symbol;
 
 export class PluginsManager {
-    /** Maps a plugin token to its constructable. */
-    private readonly refs = new Map<PluginKey, Constructable<any>>();
+    /**
+     * Used to check the whether or not a plugin has already been instantiated.
+     * Also prevents gargage collection.
+     */
+    private readonly _frequency = new Map<Constructable<any>, boolean>();
 
-    /** Maps config objects to plugins. */
-    private readonly configs = new Map<PluginKey, any>();
+    private readonly _ctrllsManager = new ControllersManager(this._, this._dpsManager);
 
     constructor(
         private readonly _logger: LoggerInterface,
-
-        private readonly controllersManager: ControllersManager,
-
-        private readonly injectablesManager: InjectablesManager,
+        private readonly _dpsManager: DependenciesManager,
     ) {}
 
-    private get _l(): NonNullableFields<LoggerInterface> {
+    private get _(): NonNullableFields<LoggerInterface> {
         return this._logger as NonNullableFields<LoggerInterface>;
     }
 
-    public exists(token: PluginKey): boolean {
-        return this.refs.has(token);
+    public get eventsManager(): EventsManager {
+        return this._ctrllsManager.eventsManager;
     }
 
-    public getConfig(token: PluginKey): any {
-        return this.configs.get(token);
+    public exists(plugin: Constructable<any>): boolean {
+        return this._frequency.has(plugin);
     }
 
     /**
-     * A plugin is resolved when its controllers are instantiated.
+     * Guarantees the validity the plugin constructable and the uniqueness of
+     * each plugin.
+     * 
+     * Maps the config object to the correct plugin constructable inside the
+     * dependency manager, which will be injected into any controller that may
+     * require it.
+     * 
+     * @param {Constructable} plugin - The plugin constructable.
+     * @param {any}           config - A plugin configuration object.
      */
-    public async resolve(token: PluginKey, plugin: Constructable<any>, config?: any): Promise<void> {
-        const { _l } = this;
+    public async resolve(plugin: Constructable<any>, config?: any): Promise<void> {
+        const { _ } = this;
 
         if (getBinding(plugin).type !== BindingType.PLUGIN) {
             throw new Error([
@@ -48,24 +57,36 @@ export class PluginsManager {
             ].join(' '));
         }
 
-        if (this.exists(token)) {
+        if (this.exists(plugin)) {
             throw new Error([
                 `Plugin ${plugin.name} already has been created.`,
                 `You are probably declarating the plugin twice.`,
             ].join(' '));
         }
 
-        log(_l.onPluginLoading(plugin.name));
+        log(_.onPluginLoading(plugin.name));
 
-        this.refs.set(token, plugin);
-        this.configs.set(token, config);
-
+        this._frequency.set(plugin, true);
         if (config) {
-            this.injectablesManager.setInstance(token, config);
+            DependenciesManager.register(plugin, plugin);
+            this._dpsManager.setInstance(plugin, config);
         }
 
         const { controllers } = getBinding(plugin).plugin;
         for (const controller of controllers)
-            await this.controllersManager.resolve(controller, plugin);
+            await this._ctrllsManager.resolve(controller, plugin);
+    }
+
+    public normalizePlugin(plugin: PluginWrapper | Constructable<any>): PluginWrapper {
+        if ((plugin as PluginWrapper).usePlugin)
+            return plugin as PluginWrapper;
+        
+        if ((plugin as Constructable<any>).prototype)
+            return { usePlugin: plugin as Constructable<any> };
+
+        throw new Error([
+            `Invalid plugin provided.`,
+            `You need to provide a constructable or a PluginWrapper.`
+        ].join(' '));
     }
 }

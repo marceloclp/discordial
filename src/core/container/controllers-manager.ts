@@ -1,5 +1,5 @@
 import { Constructable, Instance } from "../../common/types";
-import { DependencyManager } from "./dependency-manager";
+import { DependenciesManager } from "./dependencies-manager";
 import { getBinding } from "../../common/util/getBinding";
 import { BindingType } from "../../common/enums";
 import { EventsManager } from "./events-manager";
@@ -7,22 +7,22 @@ import { LoggerInterface } from "../logger/logger";
 import { log } from "../utils/log";
 
 export class ControllersManager {
-    /** Maps a controller constructable to an instance to prevent garbage collection. */
+    /** Used as a frequency map and prevents garbage collection. */
     private readonly _controllers = new Map<Constructable<any>, Instance<any>>();
 
-    private readonly _eventsManager = new EventsManager(this._logger);
+    private readonly _eventsManager = new EventsManager(this._logger, this._dpsManager);
 
     constructor(
         private readonly _logger: LoggerInterface,
-        private readonly dependencyManager: DependencyManager,
+        private readonly _dpsManager: DependenciesManager,
     ) {}
 
-    private get _l(): NonNullableFields<LoggerInterface> {
+    private get _(): NonNullableFields<LoggerInterface> {
         return this._logger as NonNullableFields<LoggerInterface>;
     }
 
-    public get controllers(): Map<Constructable<any>, Instance<any>> {
-        return this._controllers;
+    public get eventsManager(): EventsManager {
+        return this._eventsManager;
     }
 
     private has(target: Constructable<any>): boolean {
@@ -44,13 +44,12 @@ export class ControllersManager {
             ].join(' '));
         }
 
-        const { _l } = this;
-        log(_l.onControllerInitialization(controller.name));
+        log(this._.onControllerInitialization(controller.name));
 
-        const instance = await this.dependencyManager.resolveTarget(controller, plugin);
+        const instance = await this._dpsManager.resolveTarget(controller, plugin);
         this._controllers.set(controller, instance);
         this._eventsManager.mapController(instance);
         
-        log(_l.onControllerFinish());
+        log(this._.onControllerFinish());
     }
 }

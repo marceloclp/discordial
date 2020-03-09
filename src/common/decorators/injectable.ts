@@ -1,7 +1,7 @@
 import { Target, Token, TransformerFunction, DependencyWrapper, NonUndefinedField } from "../types";
 import { Scope } from "../enums";
 import { getBinding } from "../util/getBinding";
-import { InjectablesManager } from "../../core/container/injectables-manager";
+import { DependenciesManager } from "../../core/container/dependencies-manager";
 
 interface InjectableOptions {
     /** The scope defines how the injectable will be handled for each injection. */
@@ -28,5 +28,5 @@ export const Injectable = (options = defaultOptions) => (target: Target) => {
     binding.setInjectable(scope, token || target);
     binding.setRegisterAsync(registerAsync, inject);
 
-    InjectablesManager.register(token || target, target);
+    DependenciesManager.register(token || target, target);
 }
