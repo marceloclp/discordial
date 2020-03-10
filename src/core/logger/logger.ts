@@ -2,77 +2,137 @@ import _ from "chalk";
 import { DiscordialLoggerInterface } from "./discordial-logger";
 import { PluginLoggerInterface } from "./plugin-logger";
 import { ControllerLoggerInterface } from "./controller-logger";
-import { InjectableLoggerInterface } from "./injectable-logger";
 
 export interface LoggerInterface extends
     DiscordialLoggerInterface,
     PluginLoggerInterface,
-    ControllerLoggerInterface,
-    InjectableLoggerInterface {}
-
-enum Symbols {
-    dropdown_arrow = '⤷',
-    destroy = '💣',
-    starred_circle = '✪',
-    diamond = '⬥',
-    checkmark = '🗸',
-};
-
+    ControllerLoggerInterface {}
 
 export class Logger implements LoggerInterface {
-    private format(symbol: Symbols, log: string | string[], level = 0): string {
-        const indent = "    ".repeat(level);
-        const msg = Array.isArray(log) ? log.join('') : log;
-        return indent + _.bold(symbol) + ' ' + msg;
+    private readonly symbols = {
+        circle:    '●',
+        dropdown:  '⤷',
+        diamond:   '⬥',
+        checkmark: '🗸',
+        arrow:     '⇒',
+    };
+
+    private readonly styles = {
+        symbol: _.rgb(255, 230, 70),
+        timestamp: _.rgb(100, 120, 240).bgWhiteBright.bold,
+        state: _.rgb(240, 90, 140),
+        plugin: _.rgb(240, 210, 90).bold,
+        provider: _.rgb(250, 180, 80).bold,
+        controller: _.rgb(85, 240, 180).bold,
+    };
+
+    private timestamp(): string {
+        const time = new Date().toTimeString().split(' ')[0];
+        return this.styles.timestamp(`[${time}]`);
+    }
+
+    private indent(level = 1): string {
+        return "    ".repeat(level);
     }
 
     public onReady(): string {
-        return this.format(Symbols.checkmark, [
-            ` Discordial is ready!`,
-        ], 1);
+        return [
+            this.timestamp(),
+            _.bold(`Discordial is ready!\n`),
+        ].join(' ');
     }
 
     public onDiscordialStart(token: string): string {
-        return this.format(Symbols.starred_circle, [
-            ` Configuring Discordial with `,
-            _.bold.red('Token<'),
-            _.bold.rgb(250, 170, 170)(token),
-            _.bold.red('>'),
+        return [
+            '\n' +
+            this.timestamp(),
+            _.green.bold(`Starting Discordial @`),
+            _.redBright.bold(token) + '\n',
+        ].join(' ');
+    }
+
+    public onPluginsStart(numberOfPlugins: number): string {
+        return [
+            this.timestamp(),
+            _.bold(`Initializing`),
+            _.yellow.bold(numberOfPlugins),
+            _.bold(`plugin(s)`),
+            `...\n`,
+        ].join(' ');
+    }
+
+    public onPluginStart(pluginName: string, useConfig: boolean): string {
+        return [
+            this.timestamp(),
+            `Starting`,
+            this.styles.plugin(pluginName) +
+            this.styles.state(`<${ useConfig ? 'dynamic' : 'static' }>`),
+        ].join(' ');
+    }
+
+    public onPluginProvidersStart(pluginName: string, providers: { name: string }[]): string {
+        return [
+            this.timestamp(),
+            this.indent(),
+            this.styles.symbol(this.symbols.diamond),
+            `Loading`,
+            _.bold.green(providers.length),
+            this.styles.provider(`provider(s)`),
             `...`,
-        ]);
+        ].join(' ');
     }
 
-    public onDiscordialPluginsLoading(): string {
-        return this.format(Symbols.dropdown_arrow, [
-            _.bold.magenta(`Initializing Plugins...`)
-        ], 1);
+    public onPluginProviderStart(pluginName: string, providerName: string): string {
+        return [
+            this.timestamp(),
+            this.indent(2),
+            this.symbols.dropdown,
+            `Injecting`,
+            this.styles.provider(providerName),
+            `...`
+        ].join(' ');
     }
 
-    public onPluginLoading(pluginName: string): string {
-        return this.format(Symbols.dropdown_arrow, [
-            `Loading `,
-            _.bold.blueBright(pluginName),
-        ], 2);
+    public onPluginControllersStart(pluginName: string, controllers: { name: string }[]): string {
+        return [
+            this.timestamp(),
+            this.indent(),
+            this.styles.symbol(this.symbols.diamond),
+            `Loading`,
+            _.bold.green(controllers.length),
+            this.styles.controller(`controller(s)`),
+            `...`,
+        ].join(' ');
     }
 
-    public onControllerInitialization(controllerName?: string): string {
-        return this.format(Symbols.dropdown_arrow, [
-            `Initializing `,
-            _.bold.green(controllerName),
-        ], 3);
+    public onPluginFinish(pluginName: string): string {
+        return [
+            this.timestamp(),
+            this.indent(),
+            this.styles.symbol(this.symbols.diamond),
+            `Loaded successfuly!\n`,
+        ].join(' ');
     }
 
-    public onControllerMapping(controllerName?: string, methods?: { name: string, event: string }[]): string {
-        return this.format(Symbols.diamond, [
-            ` Mapping `,
-            _.red((methods as []).length),
-            ` method(s)`,
-        ], 4);
+    public onControllerStart(controllerName: string, numOfDps: number): string {
+        return [
+            this.timestamp(),
+            this.indent(2),
+            this.styles.symbol(this.symbols.dropdown),
+            `Starting`,
+            this.styles.controller(controllerName) +
+            this.styles.state(`<${numOfDps}>`),
+        ].join(' ');
     }
 
-    public onControllerFinish(): string {
-        return this.format(Symbols.checkmark, [
-            `Finished!`,
-        ], 4);
+    public onControllerMapping(numOfMethods: number): string {
+        return [
+            this.timestamp(),
+            this.indent(2),
+            this.styles.symbol(this.symbols.dropdown),
+            `Mapping`,
+            _.red.bold(numOfMethods),
+            `method(s)`,
+        ].join(' ');
     }
 }

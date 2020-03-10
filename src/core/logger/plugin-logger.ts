@@ -1,47 +1,31 @@
 export interface PluginLoggerInterface {
     /**
-     * It's called once when a plugin starts its initialization process.
-     * 
-     * The loggeable lifecycle of a plugin is:
-     *   1) Instantiate the controllers.
-     * 
+     * It's called once, when Discordial starts loading plugins.
      */
-    onPluginInitialization?: (pluginName: string) => string;
+    onPluginsStart?: (numberOfPlugins: number) => string;
 
     /**
-     * It's called each time the plugin's controller starts its initialization.
+     * It's called once for each plugin, when it starts loading.
      */
-    onPluginLoading?: (pluginName: string) => string;
+    onPluginStart?: (pluginName: string, useConfig: boolean) => string;
 
     /**
-     * It's called once when a plugin's loggeable lifecycle is over.
+     * It's called once for each plugin, once its providers, if any, start loading.
+     */
+    onPluginProvidersStart?: (pluginName: string, providers: { name: string }[]) => string;
+
+    /**
+     * It's called once of each of the plugins' providers.
+     */
+    onPluginProviderStart?: (pluginName: string, providerName: string) => string;
+
+    /**
+     * It's called once for each plugin, once its controllers, if any, start loading.
+     */
+    onPluginControllersStart?: (pluginName: string, controllers: { name: string }[]) => string;
+
+    /**
+     * It's called once for each plugin, once its providers and controllers have finished loading.
      */
     onPluginFinish?: (pluginName: string) => string;
-
-    /**
-     * It's called once when the Discordial is disconnected.
-     */
-    onPluginDestroy?: (pluginName: string) => string;
 }
-
-/*export class PluginLogger implements PluginLoggerInterface {
-    private format(log: string): string {
-        return SYMBOLS.dropdown_arrow + log;
-    }
-
-    public onInitialization(pluginName: string): string {
-        return this.format(`Starting ${pluginName}.`);
-    }
-
-    public onLoading(pluginName: string, controllerName: string): string {
-        return this.format(`Loading ${controllerName}.`);
-    }
-
-    public onFinish(pluginName: string): string {
-        return this.format(`${pluginName} has loaded successfuly.`);
-    }
-
-    public onDestroy(pluginName: string): string {
-        return SYMBOLS.destroy + `${pluginName} has been destroyed.`;
-    }
-}*/

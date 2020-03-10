@@ -5,6 +5,7 @@ import { Constructable, Instance } from "../../common/types";
 import { BindingType } from "../../common/enums";
 import { getBinding } from "../../common/util/getBinding";
 import { log } from "../utils/log";
+import { MethodMetadata } from "../../common/metadata/method-metadata";
 
 export class ControllersManager {
     /** Used as a frequency map and prevents garbage collection. */
@@ -61,13 +62,12 @@ export class ControllersManager {
             ].join(' '));
         }
 
-        log(this._.onControllerInitialization(controller.name));
+        const numOfDps = (getBinding(controller).ctor as MethodMetadata).params.length;
+        log(() => this._.onControllerStart(controller.name, numOfDps));
 
         const instance = await this._dpsManager.resolveTarget(controller, plugin);
         this._controllersMap.set(controller, instance);
         this._eventsManager.mapController(instance);
-        
-        log(this._.onControllerFinish());
 
         return instance;
     }

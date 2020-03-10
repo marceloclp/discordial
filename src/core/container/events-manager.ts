@@ -65,10 +65,7 @@ export class EventsManager {
     public mapController(controller: any): void {
         const { methods } = getBinding(controller);
 
-        log(this._.onControllerMapping(
-            controller.name,
-            methods.map(m => ({ name: m.name, event: m.event as string }))
-        ));
+        log(() => this._.onControllerMapping(methods.length));
 
         for (const method of methods) {
             const { event, target, name, roles, params } = method;

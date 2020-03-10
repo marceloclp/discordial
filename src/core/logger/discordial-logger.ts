@@ -1,11 +1,11 @@
 export interface DiscordialLoggerInterface {
-    onReady?: () => string;
-
+    /**
+     * It's called once, when Discordial starts the configuration process.
+     */
     onDiscordialStart?: (token: string) => string;
-
-    onDiscordialPluginsLoading?: () => string;
-
-    onDiscordialDestroyStart?: () => string;
-
-    onDiscordialDestroyEnd?: () => string;
+    
+    /**
+     * It's called once, when Discordial successfuly connects to the Discord API.
+     */
+    onReady?: () => string;
 }

@@ -1,3 +1,5 @@
-export const log = (log?: string): void => {
-    if (log) console.log(log);
+export const log = (msg: Function): void => {
+    try {
+        console.log(msg());
+    } catch (e) {}
 }

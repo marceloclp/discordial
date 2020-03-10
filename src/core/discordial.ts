@@ -61,10 +61,10 @@ export class Discordial {
      * @param {PluginWrapper} plugins - The list of plugins to be initialized.
      */
     private async start(plugins: (PluginWrapper | Promise<PluginWrapper>)[]): Promise<void> {
-        log(this._.onDiscordialStart(this.token));
+        log(() => this._.onDiscordialStart(this.token));
         
         await this._container.startPlugins(plugins);
-        await this.connect();
+        //await this.connect();
     }
 
     /**
@@ -74,7 +74,7 @@ export class Discordial {
         const { eventsManager } = this.container;
         const { client, token } = this;
 
-        client.on(DiscordEvents.READY, () => log(this._.onReady()));
+        client.on(DiscordEvents.READY, () => log(() => this._.onReady()));
         eventsManager.bindEvents(client);
 
         await client.login(token);

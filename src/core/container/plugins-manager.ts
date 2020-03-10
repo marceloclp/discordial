@@ -8,6 +8,7 @@ import { PluginWrapper } from "../types";
 import { getBinding } from "../../common/util/getBinding";
 import { BindingType } from "../../common/enums";
 import { log } from "../utils/log";
+import { DuplicatePluginError, InvalidPluginError, PluginFormatError } from "../errors";
 
 export class PluginsManager {
     /** Used to check whether or not a plugin has already been instantiated. */
@@ -34,7 +35,7 @@ export class PluginsManager {
     }
 
     public async startPlugins(wrappers: Promisify<PluginWrapper>[]): Promise<void> {
-        log(this._.onDiscordialPluginsLoading());
+        log(() => this._.onPluginsStart(wrappers.length));
 
         for (const asyncWrapper of wrappers) {
             const wrapper = this.normalizePlugin(await asyncWrapper);
@@ -51,25 +52,20 @@ export class PluginsManager {
      * dependency manager, which will be injected into any controller that may
      * require it.
      * 
-     * @param {Constructable} usePlugin - The plugin constructable.
-     * @param {any}           config - A plugin configuration object.
+     * A dynamic plugin may have a list of providers that require initialization
+     * to be used on custom plugin decorators.
+     * 
+     * @param {Constructable}   plugin    - The plugin constructable.
+     * @param {any}             config    - A plugin configuration object.
+     * @param {Constructable[]} providers - A list of providers to be initialized.
      */
     private async resolve(plugin: Constructable, config?: any, providers?: Constructable[]): Promise<void> {
-        if (getBinding(plugin).type !== BindingType.PLUGIN) {
-            throw new Error([
-                `${plugin.name} is not a plugin.`,
-                `You probably appended the incorrect class to Discordial plugins.`,
-            ].join(' '));
-        }
+        if (getBinding(plugin).type !== BindingType.PLUGIN)
+            throw new InvalidPluginError(plugin.name);
+        if (this.exists(plugin))
+            throw new DuplicatePluginError(plugin.name);
 
-        if (this.exists(plugin)) {
-            throw new Error([
-                `Plugin ${plugin.name} already has been created.`,
-                `You are probably declarating the plugin twice.`,
-            ].join(' '));
-        }
-
-        log(this._.onPluginLoading(plugin.name));
+        log(() => this._.onPluginStart(plugin.name, !!config));
 
         this._frequencyMap.set(plugin, true);
         if (config) {
@@ -79,20 +75,21 @@ export class PluginsManager {
 
         await this.resolveProviders(plugin, providers || []);
         await this.resolveControllers(plugin);
+
+        log(() => this._.onPluginFinish(plugin.name));
     }
 
     private async resolveProviders(plugin: Constructable, providers: Constructable[]): Promise<void> {
         if (!providers.length)
             return;
-        // log
+        log(() => this._.onPluginProvidersStart(plugin.name, providers.map(p => ({ name: p.name }))));
         for (const providerToken of providers)
             await this._dpsManager.resolveToken(providerToken, plugin);
     }
 
     private async resolveControllers(plugin: Constructable): Promise<void> {
-        // log(this._.)
-
         const { controllers } = getBinding(plugin).plugin;
+        log(() => this._.onPluginControllersStart(plugin.name, controllers.map(c => ({ name: c.name }))));
         for (const controller of controllers)
             await this._ctrllsManager.resolve(controller, plugin);
     }
@@ -106,14 +103,9 @@ export class PluginsManager {
      */
     private normalizePlugin(plugin: PluginWrapper): DynamicPlugin {
         if (typeof plugin === "object")
-            return plugin as DynamicPlugin;
-        
+            return plugin as DynamicPlugin;        
         if (typeof plugin === "function")
             return { usePlugin: plugin as Constructable };
-
-        throw new Error([
-            `Invalid plugin provided.`,
-            `You need to provide a constructable or a PluginWrapper.`
-        ].join(' '));
+        throw new PluginFormatError();
     }
 }
