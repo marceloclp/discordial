@@ -34,10 +34,10 @@ export class Container {
         log(this._.onDiscordialPluginsLoading());
         
         for (const plugin of plugins) {
-            const { usePlugin, useConfig } = this
+            const wrapper = this
                 ._pluginsManager
                 .normalizePlugin(await plugin as PluginWrapper);
-            await this._pluginsManager.resolve(usePlugin, useConfig);
+            await this._pluginsManager.resolve(wrapper);
         }
     }
 }

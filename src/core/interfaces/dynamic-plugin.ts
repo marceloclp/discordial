@@ -4,4 +4,6 @@ export interface DynamicPlugin {
     readonly usePlugin: Constructable<any>;
 
     readonly useConfig?: any;
+
+    readonly providers?: Constructable<any>[];
 }

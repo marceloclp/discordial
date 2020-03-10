@@ -41,37 +41,41 @@ export class PluginsManager {
      * dependency manager, which will be injected into any controller that may
      * require it.
      * 
-     * @param {Constructable} plugin - The plugin constructable.
+     * @param {Constructable} usePlugin - The plugin constructable.
      * @param {any}           config - A plugin configuration object.
      */
-    public async resolve(plugin: Constructable<any>, config?: any): Promise<void> {
-        const { _ } = this;
+    public async resolve(wrapper: DynamicPlugin): Promise<void> {
+        const { usePlugin, useConfig, providers } = wrapper;
 
-        if (getBinding(plugin).type !== BindingType.PLUGIN) {
+        if (getBinding(usePlugin).type !== BindingType.PLUGIN) {
             throw new Error([
-                `${plugin.name} is not a plugin.`,
+                `${usePlugin.name} is not a plugin.`,
                 `You probably appended the incorrect class to Discordial plugins.`,
             ].join(' '));
         }
 
-        if (this.exists(plugin)) {
+        if (this.exists(usePlugin)) {
             throw new Error([
-                `Plugin ${plugin.name} already has been created.`,
+                `Plugin ${usePlugin.name} already has been created.`,
                 `You are probably declarating the plugin twice.`,
             ].join(' '));
         }
 
-        log(_.onPluginLoading(plugin.name));
+        log(this._.onPluginLoading(usePlugin.name));
 
-        this._frequencyMap.set(plugin, true);
-        if (config) {
-            DependenciesManager.register(plugin, plugin);
-            this._dpsManager.setInstance(plugin, config);
+        this._frequencyMap.set(usePlugin, true);
+        if (useConfig) {
+            DependenciesManager.register(usePlugin, usePlugin);
+            this._dpsManager.setInstance(usePlugin, useConfig);
         }
 
-        const { controllers } = getBinding(plugin).plugin;
+        if (providers && providers.length)
+            for (const provider of providers)
+                await this._dpsManager.resolveToken(provider, usePlugin);
+
+        const { controllers } = getBinding(usePlugin).plugin;
         for (const controller of controllers)
-            await this._ctrllsManager.resolve(controller, plugin);
+            await this._ctrllsManager.resolve(controller, usePlugin);
     }
 
     /**
