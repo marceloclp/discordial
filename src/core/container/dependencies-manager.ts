@@ -4,6 +4,7 @@ import { RegisterAsyncMetadata } from "../../common/metadata/register-async-meta
 import { ParamMetadata } from "../../common/metadata/param-metadata";
 import { getBinding } from "../../common/util/getBinding";
 import { Keys } from "../../common/enums";
+import { UnregisteredInjectableError, DuplicateInjectableInstanceError, DuplicateInjectableError, MissingPluginConfigError } from "../errors";
 
 type InjectablesMap = Map<Token, Constructable<any>>;
 
@@ -28,10 +29,9 @@ export class DependenciesManager {
         return this._logger as NonNullableFields<LoggerInterface>;
     }
 
-    public static register(token: Token, target: any): void {
-        if (DependenciesManager._injectablesMap.has(token)) {
-            throw new Error(`The injectable <${typeof target}> can only be registered once.`);
-        }
+    public static register(token: Token, target: Constructable): void {
+        if (DependenciesManager._injectablesMap.has(token))
+            throw new DuplicateInjectableError(target.name);
         DependenciesManager._injectablesMap.set(token, target);
     }
 
@@ -40,9 +40,8 @@ export class DependenciesManager {
     }
 
     public setInstance(token: Token, instance: any): void {
-        if (this._instancesMap.has(token)) {
-            throw new Error("Injectable instance is being registered twice.");
-        }
+        if (this._instancesMap.has(token))
+            throw new DuplicateInjectableInstanceError(instance.constructor.name);
         this._instancesMap.set(token, instance);
     }
 
@@ -101,12 +100,8 @@ export class DependenciesManager {
     public async resolveToken(token: Token, plugin?: Constructable<any>): Promise<Instance<any>> {
         const target = this.getInjectable(token);
 
-        if (!target) {
-            throw new Error([
-                `Injectable is not registered.`,
-                `You likely forgot to decorate ${token}.`,
-            ].join(' '));
-        }
+        if (!target)
+            throw new UnregisteredInjectableError(token);
         
         const instance = await this.resolveTarget(target, plugin);
         
@@ -216,13 +211,8 @@ export class DependenciesManager {
      * @returns The config object.
      */
     private resolveConfigDp(plugin: Constructable<any>): any {
-        if (!this.hasInstance(plugin)) {
-            throw new Error([
-                `The config from the plugin ${plugin.name} was requested,`,
-                `but there is no config attached to this plugin. Make sure`,
-                `your plugin wrapper has the config object.`,
-            ].join(' '));
-        }
+        if (!this.hasInstance(plugin))
+            throw new MissingPluginConfigError(plugin.name);
         return this.getInstance(plugin);
     }
 }

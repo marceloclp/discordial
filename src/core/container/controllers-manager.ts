@@ -6,6 +6,7 @@ import { BindingType } from "../../common/enums";
 import { getBinding } from "../../common/util/getBinding";
 import { log } from "../utils/log";
 import { MethodMetadata } from "../../common/metadata/method-metadata";
+import { InvalidControllerError, DuplicateControllerError } from "../errors";
 
 export class ControllersManager {
     /** Used as a frequency map and prevents garbage collection. */
@@ -48,19 +49,10 @@ export class ControllersManager {
      * @returns The controller instance.
      */
     public async resolve(controller: Constructable<any>, plugin: Constructable<any>): Promise<any> {
-        if (getBinding(controller).type !== BindingType.CONTROLLER) {
-            throw new Error([
-                `${controller.name} is not a Controller.`,
-                `You likely forgot to add the @Controller decorator.`,
-            ].join(' '));
-        }
-
-        if (this.has(controller)) {
-            throw new Error([
-                `${controller.name} already has been instantiated.`,
-                `You are probably importing the controller twice.`,
-            ].join(' '));
-        }
+        if (getBinding(controller).type !== BindingType.CONTROLLER)
+            throw new InvalidControllerError(controller.name);
+        if (this.has(controller))
+            throw new DuplicateControllerError(controller.name);
 
         const numOfDps = (getBinding(controller).ctor as MethodMetadata).params.length;
         log(() => this._.onControllerStart(controller.name, numOfDps));

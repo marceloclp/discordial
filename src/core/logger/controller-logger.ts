@@ -8,5 +8,5 @@ export interface ControllerLoggerInterface {
      * It's called once after the controller is instantiated, and it starts the
      * mapping process of its methods.
      */
-    onControllerMapping?: (numOfMethods: number) => string;
+    onControllerMapping?: (controllerName: string, numOfMethods: number) => string;
 };

@@ -125,7 +125,7 @@ export class Logger implements LoggerInterface {
         ].join(' ');
     }
 
-    public onControllerMapping(numOfMethods: number): string {
+    public onControllerMapping(controllerName: string, numOfMethods: number): string {
         return [
             this.timestamp(),
             this.indent(2),
