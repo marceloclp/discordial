@@ -1,5 +1,5 @@
 /** A constructable object. */
-export type Constructable<R> = { new (...args: any[]): R };
+export type Constructable<R = any> = { new (...args: any[]): R };
 
 /** Always resolves to T. Provides better readibility. */
 export type Instance<T> = InstanceType<Constructable<T>>;

@@ -28,16 +28,9 @@ export class Container {
     /**
      * Initializes a list of plugins.
      * 
-     * @param {PluginWrapper} plugins - A list of plugins to be initialized.
+     * @param {PluginWrapper} wrappers - A list of plugins wrappers to be initialized.
      */
-    public async startPlugins(plugins: (PluginWrapper | Promise<PluginWrapper>)[]): Promise<void> {
-        log(this._.onDiscordialPluginsLoading());
-        
-        for (const plugin of plugins) {
-            const wrapper = this
-                ._pluginsManager
-                .normalizePlugin(await plugin as PluginWrapper);
-            await this._pluginsManager.resolve(wrapper);
-        }
+    public async startPlugins(wrappers: Promisify<PluginWrapper>[]): Promise<void> {
+        this._pluginsManager.startPlugins(wrappers);
     }
 }

@@ -1,9 +1,9 @@
-import { Constructable } from "discord.js";
+import { Constructable } from "../../common/types";
 
 export interface DynamicPlugin {
-    readonly usePlugin: Constructable<any>;
+    readonly usePlugin: Constructable;
 
     readonly useConfig?: any;
 
-    readonly providers?: Constructable<any>[];
+    readonly providers?: Constructable[];
 }
