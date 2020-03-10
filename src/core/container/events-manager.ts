@@ -87,7 +87,14 @@ export class EventsManager {
      */
     public bindEvents(client: Discord.Client): void {
         this.setClient(client);
+
+        log(() => this._.onEventsBinding(
+            this._eventsMap.size,
+            Object.keys(DiscordEvents).length
+        ));
+
         for (const [event, arr] of this._eventsMap.entries()) {
+            log(() => this._.onEventBinding(event, arr.length));
             client.on(event as string, (...args: any[]) => {
                 arr.forEach(wrapper => this.execMethod(event, wrapper, ...args));
             });

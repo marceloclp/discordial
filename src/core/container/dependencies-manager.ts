@@ -5,20 +5,13 @@ import { getBinding } from "../../common/util/getBinding";
 import { Keys } from "../../common/enums";
 import { UnregisteredInjectableError, DuplicateInjectableInstanceError, DuplicateInjectableError, MissingPluginConfigError } from "../errors";
 
-type InjectablesMap = Map<Token, Constructable>;
-
-type InstancesMap = Map<Token, any>;
-
 /**
  * The Dependency Manager is responsible for resolving dependencies of
  * constructors, class methods and transformer functions.
  */
 export class DependenciesManager {
-    /** Maps an injectable token to its constructable. */
-    static readonly _injectablesMap: InjectablesMap = new Map();
-
-    /** Maps an injectable token to its instance. */
-    private readonly _instancesMap: InstancesMap = new Map();
+    static readonly _injectablesMap = new Map<Token, Constructable>();
+    private readonly _instancesMap  = new Map<Token, any>();
 
     constructor(
         private readonly _logger: LoggerInterface,

@@ -2,18 +2,21 @@ import _ from "chalk";
 import { DiscordialLoggerInterface } from "./discordial-logger";
 import { PluginLoggerInterface } from "./plugin-logger";
 import { ControllerLoggerInterface } from "./controller-logger";
+import { EventLoggerInterface } from "./event-logger";
 
 export interface LoggerInterface extends
     DiscordialLoggerInterface,
     PluginLoggerInterface,
-    ControllerLoggerInterface {}
+    ControllerLoggerInterface,
+    EventLoggerInterface {}
 
 export class Logger implements LoggerInterface {
+    private readonly headerLength = 50;
+
     private readonly symbols = {
         circle:    '●',
         dropdown:  '⤷',
         diamond:   '⬥',
-        checkmark: '🗸',
         arrow:     '⇒',
     };
 
@@ -24,6 +27,8 @@ export class Logger implements LoggerInterface {
         plugin: _.rgb(240, 210, 90).bold,
         provider: _.rgb(250, 180, 80).bold,
         controller: _.rgb(85, 240, 180).bold,
+        event: _.rgb(15, 180, 255).bold,
+        header: _.bgRgb(70, 190, 105),
     };
 
     private timestamp(): string {
@@ -35,10 +40,22 @@ export class Logger implements LoggerInterface {
         return "    ".repeat(level);
     }
 
+    private header(msg: string, _: CallableFunction): string {
+        const rawMsg = msg.replace(
+            /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, ''
+        );
+        const spaceFill = " ".repeat(this.headerLength - rawMsg.length);
+        return _(msg + spaceFill);
+    }
+
     public onReady(): string {
         return [
+            '\n' +
             this.timestamp(),
-            _.bold(`Discordial is ready!\n`),
+            this.header([
+                _.bold(`Discordial is now ready and listening!`),
+            ].join(' '), this.styles.header),
+            '\n',
         ].join(' ');
     }
 
@@ -54,10 +71,12 @@ export class Logger implements LoggerInterface {
     public onPluginsStart(numberOfPlugins: number): string {
         return [
             this.timestamp(),
-            _.bold(`Initializing`),
-            _.yellow.bold(numberOfPlugins),
-            _.bold(`plugin(s)`),
-            `...\n`,
+            this.header([
+                _.bold(`Initializing`),
+                _.yellow.bold(numberOfPlugins),
+                _.bold(`plugin(s)`),
+                `...`,
+            ].join(' '), this.styles.header) + '\n',
         ].join(' ');
     }
 
@@ -109,7 +128,7 @@ export class Logger implements LoggerInterface {
         return [
             this.timestamp(),
             this.indent(),
-            this.styles.symbol(this.symbols.diamond),
+            _.greenBright.bold(this.symbols.diamond),
             `Loaded successfuly!\n`,
         ].join(' ');
     }
@@ -133,6 +152,29 @@ export class Logger implements LoggerInterface {
             `Mapping`,
             _.red.bold(numOfMethods),
             `method(s)`,
+        ].join(' ');
+    }
+
+    public onEventsBinding(numofMappedEvents: number, numOfTotalEvents: number): string {
+        return [
+            this.timestamp(),
+            this.header([
+                _.bold(`Binding`),
+                _.rgb(0, 0, 0).bold(numofMappedEvents) +
+                _.black.bold(`/`) +
+                _.black.bold(numOfTotalEvents),
+                _.bold(`event(s) ...`),
+            ].join(' '), this.styles.header) + '\n',
+        ].join(' ');
+    }
+
+    public onEventBinding(event: string, numOfMethods: number): string {
+        return [
+            this.timestamp(),
+            this.styles.event(`[${event}]`),
+            _.bold(this.symbols.arrow + ' '),
+            _.green.bold(numOfMethods),
+            `method(s) bound`,
         ].join(' ');
     }
 }

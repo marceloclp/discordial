@@ -88,7 +88,15 @@ export class PluginsManager {
 
     private async resolveControllers(plugin: Constructable): Promise<void> {
         const { controllers } = getBinding(plugin).plugin;
-        log(() => this._.onPluginControllersStart(plugin.name, controllers.map(c => ({ name: c.name }))));
+
+        if (!controllers.length)
+            return;
+
+        log(() => this._.onPluginControllersStart(
+            plugin.name,
+            controllers.map(c => ({ name: c.name }))
+        ));
+
         for (const controller of controllers)
             await this._ctrllsManager.resolve(controller, plugin);
     }

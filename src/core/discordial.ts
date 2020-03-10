@@ -63,19 +63,20 @@ export class Discordial {
     private async start(plugins: (PluginWrapper | Promise<PluginWrapper>)[]): Promise<void> {
         log(() => this._.onDiscordialStart(this.token));
         
-        await this._container.startPlugins(plugins);
-        //await this.connect();
+        await this.container.startPlugins(plugins);
+        await this.connect();
     }
 
     /**
      * Connects the Discordial to the Discord API.
      */
     private async connect(): Promise<void> {
-        const { eventsManager } = this.container;
-        const { client, token } = this;
+        const { client, token, container } = this;
 
-        client.on(DiscordEvents.READY, () => log(() => this._.onReady()));
-        eventsManager.bindEvents(client);
+        client.on(DiscordEvents.READY, () => {
+            log(() => this._.onReady());
+        });
+        container.bindEvents(client);
 
         await client.login(token);
     }
