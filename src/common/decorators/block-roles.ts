@@ -5,5 +5,5 @@ export function BlockRoles(roles: string[]) {
         getBinding(target)
             .getMethod(methodName)
             .setBlockRoles(roles);
-    }
-}
+    };
+};

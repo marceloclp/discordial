@@ -1,5 +1,4 @@
 import { Scope } from "../enums";
-import { Token } from "../types";
 
 export type InjectableMetadataCtor = ConstructorParameters<typeof InjectableMetadata>;
 

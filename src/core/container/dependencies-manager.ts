@@ -1,4 +1,3 @@
-import { Token, TransformerFunction, DependencyWrapper, Instance, Constructable } from "../../common/types";
 import { LoggerInterface } from "../logger/logger";
 import { RegisterAsyncMetadata } from "../../common/metadata/register-async-metadata";
 import { ParamMetadata } from "../../common/metadata/param-metadata";
@@ -6,7 +5,7 @@ import { getBinding } from "../../common/util/getBinding";
 import { Keys } from "../../common/enums";
 import { UnregisteredInjectableError, DuplicateInjectableInstanceError, DuplicateInjectableError, MissingPluginConfigError } from "../errors";
 
-type InjectablesMap = Map<Token, Constructable<any>>;
+type InjectablesMap = Map<Token, Constructable>;
 
 type InstancesMap = Map<Token, any>;
 
@@ -67,10 +66,7 @@ export class DependenciesManager {
      * 
      * @returns An instance of the constructable.
      */
-    public async resolveTarget(
-        target: Constructable<any>,
-        plugin?: Constructable<any>
-    ): Promise<Instance<any>> {
+    public async resolveTarget(target: Constructable, plugin?: Constructable): Promise<any> {
         const ctorMetadata = getBinding(target).ctor;
 
         if (ctorMetadata instanceof RegisterAsyncMetadata) {
@@ -97,7 +93,7 @@ export class DependenciesManager {
      * 
      * @returns An instance of the injectable.
      */
-    public async resolveToken(token: Token, plugin?: Constructable<any>): Promise<Instance<any>> {
+    public async resolveToken(token: Token, plugin?: Constructable): Promise<any> {
         const target = this.getInjectable(token);
 
         if (!target)
@@ -123,7 +119,7 @@ export class DependenciesManager {
      * 
      * @returns The resolved transformer/inject dependencies.
      */
-    public async resolveTransformerDps(dps: DependencyWrapper[], plugin?: Constructable<any>): Promise<any[]> {
+    public async resolveTransformerDps(dps: DependencyWrapper[], plugin?: Constructable): Promise<any[]> {
         const resolved = [];
         for (const dp of dps) {
             if (!dp)
@@ -148,7 +144,7 @@ export class DependenciesManager {
      * 
      * @returns The resolved method dependencies.
      */
-    public async resolveMethodDps(dps: ParamMetadata[], plugin?: Constructable<any>): Promise<any[]> {
+    public async resolveMethodDps(dps: ParamMetadata[], plugin?: Constructable): Promise<any[]> {
         const resolved = [];
         for (const dp of dps) {
             if (!dp)
@@ -172,15 +168,15 @@ export class DependenciesManager {
      */
     private async resolveTokenDp(
         token: Token,
-        transformerFn?: TransformerFunction<any, any>,
+        transformerFn?: TransformerFunction,
         inject: DependencyWrapper[] = [],
-        plugin?: Constructable<any>,
+        plugin?: Constructable,
     ): Promise<any> {
         if (this.hasInstance(token))
             return this.getInstance(token);
 
         if (this.isConfigDp(token))
-            return this.resolveConfigDp(plugin as Constructable<any>);
+            return this.resolveConfigDp(plugin as Constructable);
 
         const instance = await this.resolveToken(token, plugin);
 
@@ -210,7 +206,7 @@ export class DependenciesManager {
      * 
      * @returns The config object.
      */
-    private resolveConfigDp(plugin: Constructable<any>): any {
+    private resolveConfigDp(plugin: Constructable): any {
         if (!this.hasInstance(plugin))
             throw new MissingPluginConfigError(plugin.name);
         return this.getInstance(plugin);

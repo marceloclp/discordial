@@ -1,4 +1,3 @@
-import { Token, TransformerFunction, DependencyWrapper, NonUndefinedField, Target } from "../types";
 import { getBinding } from "../util/getBinding";
 
 interface InjectOptions {
@@ -6,21 +5,22 @@ interface InjectOptions {
     readonly dpToken: Token;
 
     /** The parameter may require a transformation before injection. */
-    readonly transformerFn?: TransformerFunction<any, any>;
+    readonly transformerFn?: TransformerFunction;
 
     /** The transformer function dependecies arguments. */
     readonly inject?: DependencyWrapper[];
 };
 
-export const CreateParamDecorator = (options: InjectOptions) => (target: Target, methodName: string, index: number) => {
-    const { dpToken, transformerFn, inject } = options as NonUndefinedField<InjectOptions>;
-    
-    getBinding(target)
-        .getMethod(methodName)
-        .setParam(
-            index,
+export function CreateParamDecorator(options: InjectOptions) {
+    return function(target: any, methodName: string, index: number) {
+        const {
             dpToken,
-            transformerFn as TransformerFunction<any, any>,
-            inject,
-        );
-}
+            transformerFn,
+            inject
+        } = options as NonNullableFields<InjectOptions>;
+
+        getBinding(target)
+            .getMethod(methodName)
+            .setParam(index, dpToken, transformerFn, inject);
+    };
+};

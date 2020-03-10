@@ -1,13 +1,11 @@
-import { Constructable } from "../types";
-
 export type PluginMetadataCtor = ConstructorParameters<typeof PluginMetadata>;
 
 export class PluginMetadata {
     constructor(
-        private readonly _controllers: Constructable<any>[],
+        private readonly _controllers: Constructable[],
     ) {}
 
-    public get controllers(): Constructable<any>[] {
+    public get controllers(): Constructable[] {
         return this._controllers;
     }
 }

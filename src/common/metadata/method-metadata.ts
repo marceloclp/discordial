@@ -1,4 +1,3 @@
-import { Target } from "../types";
 import { ParamMetadata, ParamMetadataCtor } from "./param-metadata";
 import { DiscordEvents } from "../enums";
 import { MethodMetadataRoles } from "../interfaces/method-metadata-roles";
@@ -6,7 +5,7 @@ import { MethodMetadataRoles } from "../interfaces/method-metadata-roles";
 export class MethodMetadata {
     constructor(
         /** The constructable who owns this method. */
-        private readonly _target: Target,
+        private readonly _target: any,
 
         /** The method name is required to be able to reference the method. */
         private readonly _name: string,
@@ -19,7 +18,7 @@ export class MethodMetadata {
 
     private _event?: DiscordEvents;
 
-    public get target(): Target {
+    public get target(): any {
         return this._target;
     }
 

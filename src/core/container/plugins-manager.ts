@@ -1,7 +1,6 @@
 import { EventsManager } from "./events-manager";
 import { ControllersManager } from "./controllers-manager";
 import { DependenciesManager } from "./dependencies-manager";
-import { Constructable } from "../../common/types";
 import { LoggerInterface } from "../logger/logger";
 import { DynamicPlugin } from "../interfaces/dynamic-plugin";
 import { PluginWrapper } from "../types";

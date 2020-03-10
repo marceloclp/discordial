@@ -11,5 +11,5 @@ export function AllowRoles(roles: string[]) {
         getBinding(target)
             .getMethod(methodName)
             .setAllowRoles(roles);
-    }
-}
+    };
+};

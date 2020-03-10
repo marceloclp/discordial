@@ -1,7 +1,6 @@
 import { EventsManager } from "./events-manager";
 import { DependenciesManager } from "./dependencies-manager";
 import { LoggerInterface } from "../logger/logger";
-import { Constructable, Instance } from "../../common/types";
 import { BindingType } from "../../common/enums";
 import { getBinding } from "../../common/util/getBinding";
 import { log } from "../utils/log";
@@ -10,7 +9,7 @@ import { InvalidControllerError, DuplicateControllerError } from "../errors";
 
 export class ControllersManager {
     /** Used as a frequency map and prevents garbage collection. */
-    private readonly _controllersMap = new Map<Constructable<any>, Instance<any>>();
+    private readonly _controllersMap = new Map<Constructable, any>();
 
     private readonly _eventsManager = new EventsManager(this._logger, this._dpsManager);
 
@@ -35,7 +34,7 @@ export class ControllersManager {
      * 
      * @returns a boolean indicating if it has been instantiated.
      */
-    private has(controller: Constructable<any>): boolean {
+    private has(controller: Constructable): boolean {
         return this._controllersMap.has(controller);
     }
 
@@ -48,7 +47,7 @@ export class ControllersManager {
      * 
      * @returns The controller instance.
      */
-    public async resolve(controller: Constructable<any>, plugin: Constructable<any>): Promise<any> {
+    public async resolve(controller: Constructable, plugin: Constructable): Promise<any> {
         if (getBinding(controller).type !== BindingType.CONTROLLER)
             throw new InvalidControllerError(controller.name);
         if (this.has(controller))

@@ -1,4 +1,3 @@
-import { Constructable } from "../types";
 import { BindingType } from "../enums";
 import { PluginMetadata, PluginMetadataCtor } from "./plugin-metadata";
 import { InjectableMetadata, InjectableMetadataCtor } from "./injectable-metadata";
@@ -9,7 +8,7 @@ import { ControllerMetadata, ControllerMetadataCtor } from "./controller-metadat
 export class Binding {
     constructor (
         /** 2-way reference between the metadata and the constructable. */
-        private readonly _target: Constructable<any>,
+        private readonly _target: Constructable,
     ) {}
 
     /** The type is used to make sure the container is initializing valid constructables. */
@@ -30,7 +29,7 @@ export class Binding {
     /** References the constructable methods. Required for binding events. */
     private _methods: Record<string, MethodMetadata> = {};
 
-    public get target(): Constructable<any> {
+    public get target(): Constructable {
         return this._target;
     }
 

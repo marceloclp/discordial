@@ -1,5 +1,3 @@
-import { TransformerFunction, Token, DependencyWrapper } from "../types";
-
 export type ParamMetadataCtor = ConstructorParameters<typeof ParamMetadata>;
 
 export class ParamMetadata {
@@ -8,7 +6,7 @@ export class ParamMetadata {
         private readonly _dpToken: Token,
 
         /** The parameter may require a transformation before injection. */
-        private readonly _transformerFn?: TransformerFunction<any, any>,
+        private readonly _transformerFn?: TransformerFunction,
 
         /** The transformer function dependecies arguments. */
         private readonly _inject: DependencyWrapper[] = [],
@@ -18,7 +16,7 @@ export class ParamMetadata {
         return this._dpToken;
     }
 
-    public get transformerFn(): TransformerFunction<any, any> | undefined {
+    public get transformerFn(): TransformerFunction | undefined {
         return this._transformerFn;
     }
 

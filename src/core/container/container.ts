@@ -3,7 +3,6 @@ import { PluginsManager } from "./plugins-manager";
 import { DependenciesManager } from "./dependencies-manager";
 import { LoggerInterface } from "../logger/logger";
 import { PluginWrapper } from "../types";
-import { log } from "../utils/log";
 
 /**
  * The Container registers plugins, instantiates them and prevents garbage

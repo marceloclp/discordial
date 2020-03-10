@@ -6,5 +6,5 @@ export function BindEvent(event: DiscordEvents) {
         getBinding(target)
             .getMethod(methodName)
             .setEvent(event);
-    }
-}
+    };
+};
