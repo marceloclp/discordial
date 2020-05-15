@@ -1,83 +1,41 @@
-import Discord from "discord.js";
-import { Container } from "./container/container";
-import { PluginWrapper } from "./types";
-import { Logger, LoggerInterface } from "./logger/logger";
-import { DiscordialOptions } from "./interfaces/discordial-options";
-import { DiscordEvents } from "../common/enums";
-import { log } from "./utils/log";
+import { Dial } from "../common/interfaces/dial.interface";
+import { Container } from "./container";
 
-const defaultOptions: DiscordialOptions = {
-    useLogger: Logger,
-};
+interface DiscordialOptions {}
 
 export class Discordial {
-    private readonly _logger: LoggerInterface;
-
-    /** The IoC container that will manage the dependencies. */
-    private readonly _container: Container;
-
-    private readonly _discordClient = new Discord.Client();
+    private readonly container = new Container();
 
     constructor(
-        /** Discord BOT token retrieved from the Discord developer dashboard. */
-        private readonly _token: string,
+        private readonly token: string,
+        private readonly dials: Dial[],
+        private readonly options?: DiscordialOptions
+    ) {}
 
-        /** List of plugins to be initialized with the Discordial instance. */
-        plugins: (PluginWrapper | Promise<PluginWrapper>)[],
-
-        /** Additional optional configuration for Discordial. */
-        options = defaultOptions,
-    ) {
-        console.clear();
-
-        const { useLogger } = options;
-        this._logger    = new (useLogger || Logger)();
-        this._container = new Container(this._logger);
-
-        this.start(plugins);
-    }
-
-    private get _(): NonNullableFields<LoggerInterface> {
-        return this._logger as NonNullableFields<LoggerInterface>;
-    }
-
-    private get container(): Container {
-        return this._container;
-    }
-
-    private get client(): Discord.Client {
-        return this._discordClient;
-    }
-
-    private get token(): string {
-        return this._token;
+    public async start(): Promise<this> {
+        return this;
     }
 
     /**
-     * The process of starting Discordial is separated into two proccesses:
-     *   1) Initiliazing plugins and its dependencies.
-     *   2) Connecting to the Discord API.
-     * 
-     * @param {PluginWrapper} plugins - The list of plugins to be initialized.
+     * Loading Discordial consists of the following steps:
+     *   1) Loading the Dials.
+     *      1.1) For each Dial, load its controllers.
+     *      1.2) For each controller, load its providers.
+     *   2) For each controller, map its event listeners.
+     *   3) Connect to the Discord API.
      */
-    private async start(plugins: (PluginWrapper | Promise<PluginWrapper>)[]): Promise<void> {
-        log(() => this._.onDiscordialStart(this.token));
-        
-        await this.container.startPlugins(plugins);
-        await this.connect();
+    private async load(dials: Dial[]): Promise<void> {
+        for (const dial of dials) {
+            
+        }
     }
 
     /**
-     * Connects the Discordial to the Discord API.
+     * Destroying Discordial consists of the following steps:
+     *   1) Awaiting `onDialDestroy` for each provider and controller.
+     *   2) Disconnecting from the Discord API.
      */
-    private async connect(): Promise<void> {
-        const { client, token, container } = this;
+    private async destroy(): Promise<void> {}
 
-        client.on(DiscordEvents.READY, () => {
-            log(() => this._.onReady());
-        });
-        container.bindEvents(client);
 
-        await client.login(token);
-    }
 }

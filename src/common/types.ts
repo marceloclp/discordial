@@ -1,11 +1,16 @@
-/** A constructable object. */
-type Constructable<R = any> = { new (...args: any[]): R };
+/** Type utils. */
+declare type Require<T> = { [K in keyof T]-?: T[K] };
 
-/** A function used to transform a dependency after instantiation or before injection. */
-type TransformerFunction<T = any, R = any> = (target: T, ...args: DependencyWrapper[]) => R | Promise<R>;
+declare type Ctor<T extends Constructable> = ConstructorParameters<T>;
 
-/** A key that is used to access the injectables cache by a secondary name instead of the Class itself. */
-type Token = Symbol | string | Constructable;
+declare type OptionalCtor<T extends Constructable> = Partial<Ctor<T>>;
 
-/** A transformer function may receive any number of dependencies it requires. */
-type DependencyWrapper = { token: Token } | any;
+
+/** Types. */
+declare type Token = Symbol | string | Constructable;
+
+declare type Promisify<T> = T | Promise<T>;
+
+declare type Constructable<T = any> = new (...args: any[]) => T;
+
+declare type TransformerFn<T = any, R = any> = (target: T, ...args: any[]) => Promisify<R>;
